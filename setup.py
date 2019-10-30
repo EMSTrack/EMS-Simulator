@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(
-    name="EMS-Simulator",
+    name="ems-simulator",
     version="0.1",
     packages=['ems'],
     python_requires='>=3.4',
