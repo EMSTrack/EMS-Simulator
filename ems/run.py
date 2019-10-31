@@ -6,7 +6,7 @@ class Driver:
 
     def __init__(self, yamlfile='', **kwargs):
         if yamlfile:
-            kwargs.update(yaml.full_load(open(yamlfile, 'r')))
+            kwargs.update(yaml.load(open(yamlfile, 'r')))
         self.params = kwargs
 
     def create_simulator(self):
