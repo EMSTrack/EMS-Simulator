@@ -39,20 +39,21 @@ class Driver:
         # Dictionary (nest object)
         if isinstance(param, dict):
             params = {}
-            cname = cpath = None
+            pname = cname = cpath = None
             for key, value in param.items():
                 # Parse into class and classname
                 if key == "class":
                     cname_parts = value.split('.')
                     cname = cname_parts[-1]
-                    cpath = '.'.join(cname_parts[:-1])
+                    cpath = '.'.join(cname_parts[1:-1])
+                    pname = cname_parts[0]
 
                 # Parameter: recurse to create object for parameter
                 else:
                     params[key] = Driver._create_recurse(value, objects)
 
             # print("Instantiating: {}".format(cname)) # TODO Change to log
-            c = getattr(importlib.import_module(cpath), cname)
+            c = getattr(importlib.import_module('.' + cpath, pname), cname)
             instance = c(**params)
             return instance
 
@@ -69,34 +70,34 @@ class Driver:
             return param
 
 
-if __name__ == "__main__":
-
-    import argparse
-
-    parser = argparse.ArgumentParser(
-        description="Load configurations, data, preprocess models. Run simulator on "
-                    "ambulance dispatch. Decisions are made during the simulation, but "
-                    "the events are output to a csv file for replay.")
-
-    parser.add_argument('config_file',
-                        help="The simulator needs a configuration to begin the computation.",
-                        type=str,)
-
-    parser.add_argument('output_dir',
-                        help="The simulator needs a configuration to begin the computation.",
-                        type=str,
-                        default=".")
-
-    # parse arguments
-    args = parser.parse_args()
-
-    # create simulator
-    driver = Driver(args.config_file)
-    sim, data = driver.create_simulator()
-
-    # run simulator
-    case_record_set, metric_aggregator = sim.run()
-
-    # Save the finished simulator information
-    case_record_set.write_to_file(args.output_dir + '/processed_cases.csv')
-    metric_aggregator.write_to_file(args.output_dir + '/metrics.csv')
+# if __name__ == "__main__":
+#
+#     import argparse
+#
+#     parser = argparse.ArgumentParser(
+#         description="Load configurations, data, preprocess models. Run simulator on "
+#                     "ambulance dispatch. Decisions are made during the simulation, but "
+#                     "the events are output to a csv file for replay.")
+#
+#     parser.add_argument('config_file',
+#                         help="The simulator needs a configuration to begin the computation.",
+#                         type=str,)
+#
+#     parser.add_argument('output_dir',
+#                         help="The simulator needs a configuration to begin the computation.",
+#                         type=str,
+#                         default=".")
+#
+#     # parse arguments
+#     args = parser.parse_args()
+#
+#     # create simulator
+#     driver = Driver(args.config_file)
+#     sim, data = driver.create_simulator()
+#
+#     # run simulator
+#     case_record_set, metric_aggregator = sim.run()
+#
+#     # Save the finished simulator information
+#     case_record_set.write_to_file(args.output_dir + '/processed_cases.csv')
+#     metric_aggregator.write_to_file(args.output_dir + '/metrics.csv')

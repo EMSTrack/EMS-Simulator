@@ -24,3 +24,6 @@ class Simulator:
 
     def run(self):
         raise NotImplementedError()
+
+    def write_results(self, output_dir):
+        raise NotImplementedError()

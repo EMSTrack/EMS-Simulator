@@ -40,9 +40,10 @@ class EventDispatcherSimulator(Simulator):
                  ambulances: AmbulanceSet,
                  cases: CaseSet,
                  ambulance_selector: AmbulanceSelector,
-                 metric_aggregator: MetricAggregator=None,
-                 debug:bool = False):
+                 metric_aggregator: MetricAggregator = None,
+                 debug: bool = False):
         super().__init__(ambulances, cases, ambulance_selector, metric_aggregator, debug)
+        self.case_record_set = CaseRecordSet()
 
     def print(self, o):
         if self.debug:
@@ -53,7 +54,6 @@ class EventDispatcherSimulator(Simulator):
         ambulances = self.ambulances.ambulances
         for ambulance in ambulances:
             ambulance.location = ambulance.base
-        case_record_set = CaseRecordSet()
         case_iterator = self.cases.iterator()
         pending_cases = []
         ongoing_case_states = []
@@ -106,19 +106,19 @@ class EventDispatcherSimulator(Simulator):
 
                 self.print(colored("Current Time: {}".format(current_time), "cyan", attrs=["bold"]))
                 self.print(colored("Processing ongoing case: {}".format(next_ongoing_case_state.case.id),
-                              "green"))
+                                   "green"))
 
                 # Process ongoing case
                 case_state_to_add, finished = self.process_ongoing_case(next_ongoing_case_state, current_time)
                 if not finished:
                     bisect.insort_left(ongoing_case_states, case_state_to_add)
                 else:
-                    case_record_set.add_case_record(next_ongoing_case_state.case_record)
+                    self.case_record_set.add_case_record(next_ongoing_case_state.case_record)
 
             self.print(colored("Busy ambulances: {}".format(sorted([amb.id for amb in ambulances if amb.deployed])),
-                          "yellow"))
+                               "yellow"))
             self.print(colored("Ongoing cases: {}".format([case_state.case.id for case_state in ongoing_case_states]),
-                          "yellow"))
+                               "yellow"))
             self.print(colored("Pending cases: {}".format([case.id for case in pending_cases]), "red"))
             self.print("")
             self.print(colored("Metrics", "magenta", attrs=["bold"]))
@@ -134,8 +134,6 @@ class EventDispatcherSimulator(Simulator):
                     self.print(colored("{}: {}".format(metric_tag, value), "magenta"))
 
             self.print("=" * 80)
-
-        return case_record_set, self.metric_aggregator
 
     # Selects an ambulance for the case and returns a Case State representing the next event to complete and the event
     # iterator
@@ -154,7 +152,8 @@ class EventDispatcherSimulator(Simulator):
 
         # TODO quite a bit of repeated code for self.print statements
         self.print("Started new event: {}".format(case_next_event.event_type.value))
-        self.print("Destination: {}, {}".format(case_next_event.destination.latitude, case_next_event.destination.longitude))
+        self.print(
+            "Destination: {}, {}".format(case_next_event.destination.latitude, case_next_event.destination.longitude))
         self.print("Duration: {}".format(case_next_event.duration))
         err = "{}%".format(round(case_next_event.error, 2)) if case_next_event.error else None
         self.print("Distance Accuracy: {}".format(err))
@@ -214,3 +213,9 @@ class EventDispatcherSimulator(Simulator):
         available_ambulances = [amb for amb in ambulances if not amb.deployed]
         selection = self.ambulance_selector.select_ambulance(available_ambulances, case, time)
         return selection
+
+    def write_results(self, output_dir):
+        self.case_record_set.write_to_file(output_filename=output_dir + '/simulated_cases.csv')
+
+        if self.metric_aggregator is not None:
+            self.metric_aggregator.write_to_file(output_filename=output_dir + '/metrics.csv')
