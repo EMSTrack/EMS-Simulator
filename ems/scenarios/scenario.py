@@ -1,6 +1,6 @@
 from typing import List
 
-from ems.datasets.case.case_set import CaseSet
+from ems.datasets.case import CaseSet
 from ems.triggers.trigger import Trigger
 
 
