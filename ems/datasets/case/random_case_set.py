@@ -6,6 +6,7 @@ from ems.generators.duration.duration import DurationGenerator
 from ems.generators.location.location import LocationGenerator
 from ems.generators.event.event_generator import EventGenerator
 from ems.generators.priority.priority import PriorityGenerator
+from ems.generators.priority.random import RandomPriorityGenerator
 
 from ems.models.cases.random_case import RandomCase
 
@@ -17,8 +18,8 @@ class RandomCaseSet(CaseSet):
                  time: datetime,
                  case_time_generator: DurationGenerator,
                  case_location_generator: LocationGenerator,
-                 case_priority_generator: PriorityGenerator,
                  event_generator: EventGenerator,
+                 case_priority_generator: PriorityGenerator = RandomPriorityGenerator(),
                  quantity: int = None):
         super().__init__(time)
         self.time = time
@@ -33,7 +34,7 @@ class RandomCaseSet(CaseSet):
 
         while self.quantity is None or k <= self.quantity:
             # Compute time and location of next event via generators
-            duration = self.case_time_generator.generate(timestamp=self.time)
+            duration = self.case_time_generator.generate(timestamp=self.time)["duration"]
 
             self.time = self.time + duration
             point = self.location_generator.generate(self.time)

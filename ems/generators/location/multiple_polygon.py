@@ -42,7 +42,7 @@ class MultiPolygonLocationGenerator(LocationGenerator):
             self.densities = densities
 
         # Validate function args
-        if sum(densities) == 1.0:
+        if sum(densities) != 1.0:
             raise Exception("Sum of densities should add up to 100%")
         if len(densities) != len(longitudes):
             raise Exception("Provided polygons and densities are not equal in length")
