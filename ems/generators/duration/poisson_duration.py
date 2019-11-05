@@ -24,7 +24,5 @@ class PoissonDurationGenerator(DurationGenerator):
                  timestamp: datetime = None):
         rand = -math.log(1.0 - random.random())
         minutes_until_next = rand / self.lmda
-        return {
-            'duration': timedelta(minutes=minutes_until_next),
-            'disaster': self.lmda > 0.3
-        }
+        return {'duration': timedelta(minutes=minutes_until_next)}
+
