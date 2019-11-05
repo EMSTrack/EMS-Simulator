@@ -12,7 +12,7 @@ setup(
               'ems.scenarios',
               'ems.simulators',
               'ems.triggers'],
-    python_requires='>=3.4',
+    python_requires='>=3.7',
 
     # metadata
     author="Mauricio C. de Oliveira, Timothy Lam, Hans Yuan",
