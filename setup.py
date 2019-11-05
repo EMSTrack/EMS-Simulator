@@ -2,8 +2,16 @@ from distutils.core import setup
 
 setup(
     name="ems-simulator",
-    version="0.1",
-    packages=['ems'],
+    version="0.1.5",
+    packages=['ems',
+              'ems.algorithms',
+              'ems.analysis',
+              'ems.datasets',
+              'ems.generators',
+              'ems.models',
+              'ems.scenarios',
+              'ems.simulators',
+              'ems.triggers'],
     python_requires='>=3.4',
 
     # metadata
