@@ -4,9 +4,9 @@ import yaml
 
 class Driver:
 
-    def __init__(self, config_loc='', **kwargs):
-        if config_loc:
-            kwargs.update(yaml.load(open(config_loc, 'r')))
+    def __init__(self, config_location='', **kwargs):
+        if config_location:
+            kwargs.update(yaml.load(open(config_location, 'r')))
         self.params = kwargs
 
     def create_simulator(self):

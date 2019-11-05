@@ -11,7 +11,7 @@ class Metric:
         self.tag = tag
 
     def __eq__(self, other):
-        return self.tag == self.tag
+        return self.tag == other.tag
 
     def calculate(self,
                   timestamp: datetime,
