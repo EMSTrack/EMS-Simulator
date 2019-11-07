@@ -1,17 +1,10 @@
 from distutils.core import setup
+from setuptools import find_packages
 
 setup(
     name="ems-simulator",
-    version="0.1.5",
-    packages=['ems',
-              'ems.algorithms',
-              'ems.analysis',
-              'ems.datasets',
-              'ems.generators',
-              'ems.models',
-              'ems.scenarios',
-              'ems.simulators',
-              'ems.triggers'],
+    version="0.1.6",
+    packages=find_packages(),
     python_requires='>=3.7',
 
     # metadata
