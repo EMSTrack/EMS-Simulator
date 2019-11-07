@@ -1,5 +1,5 @@
 # Manages the progression of scenarios
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 
 from ems.scenarios.scenario import Scenario
@@ -45,7 +45,7 @@ class ScenarioController:
 
     def retrieve_initial_scenario(self, time):
         self.current_time = time
-        ind = 1
+        ind = 0
         for tt in self.inactive_tts:
             if tt.trigger.start_time <= self.current_time:
                 self.active_tts.append(tt)
@@ -62,27 +62,26 @@ class ScenarioController:
 
     # Returns the next scenario and the new time
     def retrieve_next_scenario(self, time: datetime):
-
         # Two lists:
         # Active_tts are all currently active tts in order of priority
         # Inactive_tts are all inactive tts in order of their start time
         current_tt = self.active_tts[0]
         if not current_tt.trigger.is_active(time):
-            self.current_time = current_tt.trigger.finish_time
+            self.current_time = current_tt.trigger.finish_time + timedelta(seconds=1)
         else:
             self.current_time = time
 
         # Introduce any new scenarios 1 by 1 to check for one with higher priority. If none is found, then proceed
         # with the current scenario and current time (change scenario if current has ended)
         new_tt = None
-        ind = 1
+        ind = 0
         for tt in self.inactive_tts:
             if tt.trigger.start_time <= self.current_time:
                 self.active_tts.append(tt)
-                if tt.scenario.priority > current_tt.scenario.priority:
+                ind += 1
+                if tt.scenario.priority < current_tt.scenario.priority:
                     new_tt = tt
                     break
-                ind += 1
             else:
                 break
         self.inactive_tts = self.inactive_tts[ind:]
@@ -100,7 +99,7 @@ class ScenarioController:
         self.active_tts = new_actives
 
         # Re-sort tts
-        self.active_tts = sorted(self.active_tts, key=lambda x: -x.scenario.priority)
+        self.active_tts = sorted(self.active_tts, key=lambda x: x.scenario.priority)
         self.inactive_tts = sorted(self.inactive_tts, key=lambda x: x.trigger.start_time)
 
         return self.active_tts[0].scenario, self.current_time

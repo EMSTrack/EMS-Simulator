@@ -72,8 +72,8 @@ class ScenarioCaseSet(CaseSet):
             # self.scenario_controller.set_times(time=self.time)
 
             # TODO These could be useful as logs
-            # print("Next Scenario: {}".format(self.current_scenario.label))
-            # print("Next case time: {}".format(new_case.date_recorded))
+            print("Next Scenario: {}".format(self.current_scenario.label))
+            print("Next case time: {}".format(new_case.date_recorded))
 
             new_case.id = k
             k += 1

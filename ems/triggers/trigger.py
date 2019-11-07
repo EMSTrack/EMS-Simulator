@@ -38,3 +38,4 @@ class TimeTrigger(Trigger):
     def update(self):
         if self.interval is not None:
             self.start_time += self.interval
+            self.finish_time += self.interval
