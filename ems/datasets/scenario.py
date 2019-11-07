@@ -28,7 +28,7 @@ class ScenarioCaseSet(CaseSet):
 
         k = 1
 
-        self.current_scenario, self.time = self.scenario_controller.retrieve_next_scenario(self.time)
+        self.current_scenario, self.time = self.scenario_controller.retrieve_initial_scenario(self.time)
 
         while k <= self.quantity:
 
@@ -53,8 +53,6 @@ class ScenarioCaseSet(CaseSet):
 
                 # print("Temp next case time: {}".format(new_case.date_recorded))
 
-                self.scenario_controller.flush_inactive()
-
                 # Step 2
                 next_scenario, next_time = self.scenario_controller.retrieve_next_scenario(new_case.date_recorded)
 
@@ -70,8 +68,6 @@ class ScenarioCaseSet(CaseSet):
                 # Update times in all case sets
                 for s in self.scenarios:
                     s.case_set.set_time(self.time)
-
-                self.scenario_controller.flush_inactive()
 
             # self.scenario_controller.set_times(time=self.time)
 
