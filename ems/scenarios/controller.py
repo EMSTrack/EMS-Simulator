@@ -1,9 +1,11 @@
 # Manages the progression of scenarios
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 
 from ems.scenarios.scenario import Scenario
 from ems.triggers.trigger import Trigger
+
+import numpy as np
 
 
 class TriggerTuple:
@@ -21,18 +23,6 @@ class TriggerTuple:
         return "Scenario {}; Trigger {}".format(self.scenario.label, self.trigger.id)
 
 
-class TriggerTimeTuple:
-
-    def __init__(self,
-                 tt: TriggerTuple,
-                 time: datetime):
-        self.tt = tt
-        self.time = time
-
-    def __str__(self):
-        return "Scenario {}; Trigger {}; Time: {}".format(self.tt.scenario.label, self.tt.trigger.id, self.time)
-
-
 # Current solution relies on keeping track of all scenario triggers that are active at a given time. Upon call to
 # retrieve the next scenario, all active scenarios that have ended should end and all inactive scenarios that have
 # started should start. Then the new scenario should be the scenario with the highest priority of the active
@@ -42,121 +32,79 @@ class TriggerTimeTuple:
 # but rather, by event based, variable interval time jumps. Inactive scenarios may cause a "rewind" in time back to
 # the start of its time. Thus the algorithm is as follows:
 
-# 1. With given time, check all inactive triggers that have started
-# 2. Beginning with the earliest started inactive trigger, check to see if any currently active triggers have
-#    ended starting at that time. Mark those triggers as inactive.
-# 3. Add the started inactive trigger to the active triggers
-# 4. Check to see if newly active trigger has a higher priority than all of the still active triggers. If so, it
-#    must be the new scenario. If so, return it; current list of active triggers should be correct.
-# 5. Repeat from 2 with started inactive triggers in chronological order until no more
-# 6. Reaching this step means that no newly activated scenarios (if any) have a higher priority than the existing
-#    scenarios. Therefore, return the scenario with the highest priority in the active triggers list
+#
 class ScenarioController:
 
     def __init__(self,
                  scenarios: List[Scenario]):
-        self.scenarios = scenarios
-        self.active_triggers = []
-        self.inactive_trigger_buffer = []
+        # Maintain a list of sorted triggers and their scenario
+        tts = [TriggerTuple(scenario=s, trigger=t) for s in scenarios for t in s.triggers]
+        self.inactive_tts = sorted(tts, key=lambda x: x.trigger.start_time)
+        self.active_tts = []
+        self.current_time = None
 
-        index = 0
-        for scenario in self.scenarios:
-            for trigger in scenario.triggers:
-                trigger.set_id(index)
-                index += 1
+    def retrieve_initial_scenario(self, time):
+        self.current_time = time
+        ind = 0
+        for tt in self.inactive_tts:
+            if tt.trigger.start_time <= self.current_time:
+                self.active_tts.append(tt)
+                ind += 1
+            else:
+                break
+        self.inactive_tts = self.inactive_tts[ind:]
+
+        # Re-sort tts
+        self.active_tts = sorted(self.active_tts, key=lambda x: -x.scenario.priority)
+        self.inactive_tts = sorted(self.inactive_tts, key=lambda x: x.trigger.start_time)
+
+        return self.active_tts[0].scenario, self.current_time
 
     # Returns the next scenario and the new time
     def retrieve_next_scenario(self, time: datetime):
+        # Two lists:
+        # Active_tts are all currently active tts in order of priority
+        # Inactive_tts are all inactive tts in order of their start time
+        current_tt = self.active_tts[0]
+        if not current_tt.trigger.is_active(time):
+            self.current_time = current_tt.trigger.finish_time + timedelta(seconds=1)
+        else:
+            self.current_time = time
 
-        # self.set_times(time)
-
-        fired_triggers = self._check_start_triggers(time)
-        fired_triggers = sorted(fired_triggers, key=lambda x: x.time)
-
-        # print("Fired triggers")
-        # for p in fired_triggers:
-        #     print(p)
-
-        preactive_triggers = []
-        for fired in fired_triggers:
-
-            self.active_triggers, inactive_triggers = self._check_end_triggers(fired.time)
-            preactive_triggers.append(fired)
-            self.inactive_trigger_buffer += inactive_triggers
-
-            # Priority comparison portion
-            has_highest_priority = True
-            for active_trigger in self.active_triggers:
-                if active_trigger.tt.scenario.priority < fired.tt.scenario.priority:
-                    has_highest_priority = False
-
-            if has_highest_priority:
-                self.active_triggers += preactive_triggers
-                return fired.tt.scenario, fired.time
-
-        self.active_triggers, inactive_triggers = self._check_end_triggers(time)
-        self.active_triggers += preactive_triggers
-
-        # print("Active triggers")
-        # for p in self.active_triggers:
-        #     print(p)
-        #
-        # print("Ended triggers")
-        # for p in self.inactive_trigger_buffer:
-        #     print(p)
-
-        self.inactive_trigger_buffer += inactive_triggers
-
-        if len(self.active_triggers) == 0:
-            raise Exception("No scenario can be chosen")
-
-        # Return scenario with highest priority
-        self.active_triggers = sorted(self.active_triggers, key=lambda x: x.tt.scenario.priority)
-
-        return self.active_triggers[0].tt.scenario, time
-
-    def set_times(self, time):
-        for active_trigger in self.active_triggers:
-            active_trigger.time = time
-
-    def flush_inactive(self):
-        for inactive_trigger in self.inactive_trigger_buffer:
-            inactive_trigger.tt.trigger.mark_ended()
-        self.inactive_trigger_buffer = []
-
-    # Returns a list of tuples of (start_time, st_pair) for each newly active trigger
-    def _check_start_triggers(self, time: datetime):
-        fired_triggers = []
-
-        # Loop through each scenario's triggers
-        for scenario in self.scenarios:
-            for trigger in scenario.triggers:
-
-                # If the trigger is not active but has started, add that to the list to return
-                pair = TriggerTuple(scenario, trigger)
-
-                if pair not in [active_trigger.tt for active_trigger in self.active_triggers]:
-
-                    should_start, start_time = trigger.has_started(time=time)
-
-                    if should_start:
-                        fired_triggers.append(TriggerTimeTuple(tt=pair,
-                                                               time=start_time))
-
-        return fired_triggers
-
-    # Returns two lists of triggers
-    # One list of previously active triggers that are still active
-    # Another list of previously active triggers that are now inactive
-    def _check_end_triggers(self, time):
-
-        actives = []
-        inactives = []
-
-        for active_trigger in self.active_triggers:
-            if active_trigger.tt.trigger.has_ended(time):
-                inactives.append(active_trigger)
+        # Introduce any new scenarios 1 by 1 to check for one with higher priority. If none is found, then proceed
+        # with the current scenario and current time (change scenario if current has ended)
+        new_tt = None
+        ind = 0
+        for tt in self.inactive_tts:
+            if tt.trigger.start_time <= self.current_time:
+                self.active_tts.append(tt)
+                ind += 1
+                if tt.scenario.priority < current_tt.scenario.priority:
+                    new_tt = tt
+                    break
             else:
-                actives.append(active_trigger)
+                break
+        self.inactive_tts = self.inactive_tts[ind:]
 
-        return actives, inactives
+        if new_tt is not None:
+            self.current_time = new_tt.trigger.start_time
+
+        # Retiring triggers
+        new_actives = []
+        for active_tt in self.active_tts:
+            if active_tt.trigger.is_active(self.current_time):
+                new_actives.append(active_tt)
+            else:
+                self.retire(active_tt)
+        self.active_tts = new_actives
+
+        # Re-sort tts
+        self.active_tts = sorted(self.active_tts, key=lambda x: x.scenario.priority)
+        self.inactive_tts = sorted(self.inactive_tts, key=lambda x: x.trigger.start_time)
+
+        return self.active_tts[0].scenario, self.current_time
+
+    def retire(self, tt):
+        if tt.trigger.interval is not None:
+            tt.trigger.update()
+            self.inactive_tts.append(tt)
