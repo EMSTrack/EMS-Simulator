@@ -155,6 +155,8 @@ class EventDispatcherSimulator(Simulator):
 
             self.print("=" * 80)
 
+            return self.case_record_set
+
     # Selects an ambulance for the case and returns a Case State representing the next event to complete and the event
     # iterator
     def process_new_case(self, ambulances, case: Case, current_time: datetime):
@@ -233,6 +235,11 @@ class EventDispatcherSimulator(Simulator):
         available_ambulances = [amb for amb in ambulances if not amb.deployed]
         selection = self.ambulance_selector.select_ambulance(available_ambulances, case, time)
         return selection
+
+    def get_metrics(self):
+        if self.metric_aggregator is not None:
+            return self.metric_aggregator.results
+        return None
 
     def write_results(self, output_dir):
         self.case_record_set.write_to_file(output_filename=output_dir + '/simulated_cases.csv')
