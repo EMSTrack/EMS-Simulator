@@ -71,11 +71,3 @@ You will need to run one of our scripts to produce some synthetic input data. Th
 - Specify the requirements for the simulation (look to the other YAMLs for an example). Additional extensions for the framework can also be specified here.
 
 `python run.py simple.yaml`
-
-## Run on binder
-
-Demo notebooks can be run online on [binder](https://mybinder.org). 
-
-Just click on the binder logo:
-
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/EMSTrack/Algorithms/master)
