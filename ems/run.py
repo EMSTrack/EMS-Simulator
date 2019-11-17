@@ -43,17 +43,14 @@ class Driver:
             for key, value in param.items():
                 # Parse into class and classname
                 if key == "class":
-                    cname_parts = value.split('.')
-                    cname = cname_parts[-1]
-                    cpath = '.'.join(cname_parts[1:-1])
-                    pname = cname_parts[0]
+                    cpath, cname = value.rsplit('.', 1)
 
                 # Parameter: recurse to create object for parameter
                 else:
                     params[key] = Driver._create_recurse(value, objects)
 
             # print("Instantiating: {}".format(cname)) # TODO Change to log
-            c = getattr(importlib.import_module('.' + cpath, pname), cname)
+            c = getattr(importlib.import_module(cpath), cname)
             instance = c(**params)
             return instance
 
