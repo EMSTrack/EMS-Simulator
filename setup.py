@@ -3,7 +3,7 @@ from setuptools import find_packages
 
 setup(
     name="ems-simulator",
-    version="0.1.7",
+    version="0.1.9",
     packages=find_packages(),
     python_requires='>=3.7',
 

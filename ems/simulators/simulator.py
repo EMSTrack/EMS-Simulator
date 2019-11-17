@@ -155,7 +155,7 @@ class EventDispatcherSimulator(Simulator):
 
             self.print("=" * 80)
 
-            return self.case_record_set
+        return self.case_record_set
 
     # Selects an ambulance for the case and returns a Case State representing the next event to complete and the event
     # iterator
