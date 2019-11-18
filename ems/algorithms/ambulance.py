@@ -20,6 +20,7 @@ class AmbulanceSelector:
                case: Case,
                time: datetime):
         """
+        Selects an ambulance
 
         :param ambulances: The ambulances to select from for dispatch
         :type ambulances: List<Ambulance>
