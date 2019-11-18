@@ -1,73 +1,17 @@
-# Ambulance Dispatch Simulation
+# EMS-Simulator
 
-A library to do ambulance dispatch simulation and analysis.
+EMS Simulator is an open-source software for performing ambulance dispatch simulation and analyses. It was created for the purpose of providing a general, customizable ambulance simulation framework with built-in and extendable functionality. With the usage of this library, we hope to eliminate overhead in designing specialized simulation software and lower barrier to emergency response optimization in health organizations globally.
 
-# Installation
-
-There are many ways to get the simulator to work. See [The Installation Instructions](INSTALL.md).
-
-# Learning how to run the simulator
-
-`python3 run-simulation --help`
-
-Among other things, you will see this:
-
-`usage: run-simulation [-h] config_file` 
-
-The program expects you to configure the specifications of the simulation and state where those specifications are. 
-
-## YAML Configuration Files
-
-The configuration file is in YAML format, and it contains user specifications for how the simulation runs. For specification details, an upcoming paper will detail that. For now, take a look 
-at `configurations/example.yaml`. 
-
-# Run an example simulation
-
-#### The simulation currently must be run from the repository itself. 
-
-`pwd` should return your directory and `/Algorithms/`. For example, here's mine: 
-
-`/Users/vectflux/ReEMS/Algorithms`
-
-#### Let's run the simulation.
-
-`python3 run-simulation configurations/example.yaml`
-
-If you got an error like `results does not exist`, make a new subdirectory:
-
-`mkdir results`
-
-Don't worry about accidentally pushing your own results. This folder is in the `.gitignore` file. 
-
-#### On successful simulation, you will find the results saved under `./results/`
-
-`ls ./results/`
+- Sample Simulations: https://github.com/EMSTrack/EMS-Simulator-Demos
+- Documentation: In Progress
+- Source Code: https://github.com/EMSTrack/EMS-Simulator
+- Bug Reporting: https://github.com/EMSTrack/EMS-Simulator/issues
 
 
-# Run a simple simulation
-
-`python3 run-simulation configurations/simple.yaml`  
-
-#### You will find that this fails! 
-
-That's because this particular configuration uses certain historical data files that do not exist **yet**. 
-
-You will need to run one of our scripts to produce some synthetic input data. These inputs are examples of well-formatted CSV files that EMS organizations can export their historical data to. Alternatively, another data reader can be implemented that accepts data in a different way. 
-
-`[Insert command for script here.]`
-
-#### Now if you run the simulation again, the historical data is read into the simulation. 
-
-`python3 run-simulation configurations/simple.yaml`  
-
-#### On successful simulation, you will find the results saved under `./results/` under a different name.
-
-`ls ./results/`
-
-# Custom Simulation
-
-- To run a custom simulation, create a new YAML file or copy an existing one. 
-
-- Specify the requirements for the simulation (look to the other YAMLs for an example). Additional extensions for the framework can also be specified here.
-
-`python run.py simple.yaml`
+EMS-Simulator depends on the following libraries:
+- Numpy, for mathmatical computation convenience
+- Scipy, for KD Tree implementation in nearest neighbor calculation
+- Geopy, for manipulation of spatial coordinates
+- Pandas, for internal data manipulation and file reading
+- Pyyaml, for loading simulation configurations from file
+- Shapely, for manipulation of spatial polygons
