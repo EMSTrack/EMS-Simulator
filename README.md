@@ -1,6 +1,6 @@
 # EMS-Simulator
 
-EMS Simulator is an open-source software for performing ambulance dispatch simulation and analyses. It was created for the purpose of providing a general, customizable ambulance simulation framework with built-in and extendable functionality. With the usage of this library, we hope to eliminate overhead in designing specialized simulation software and lower barrier to emergency response optimization in health organizations globally.
+EMS Simulator is an open-source software for performing ambulance dispatch simulation and analyses. It was created for the purpose of providing a general, customizable ambulance simulation framework with built-in and extendable functionality. The library aims to eliminate overhead in designing specialized simulation software and lower barrier to emergency response optimization in health organizations globally.
 
 - __Sample Simulations:__ https://github.com/EMSTrack/EMS-Simulator-Demos
 - __Documentation:__ In Progress
@@ -9,9 +9,9 @@ EMS Simulator is an open-source software for performing ambulance dispatch simul
 
 
 EMS-Simulator depends on the following libraries:
-- NumPy, for mathmatical computation convenience
-- SciPy, for KD Tree implementation in nearest neighbor calculation
-- Geopy, for manipulation of spatial coordinates
-- Pandas, for internal data manipulation and file reading
-- Pyyaml, for loading simulation configurations from file
-- Shapely, for manipulation of spatial polygons
+- __NumPy__, for mathmatical computation convenience
+- __SciPy__, for KD Tree implementation in nearest neighbor calculation
+- __Geopy__, for manipulation of spatial coordinates
+- __Pandas__, for internal data manipulation and file reading
+- __Pyyaml__, for loading simulation configurations from file
+- __Shapely__, for manipulation of spatial polygons
