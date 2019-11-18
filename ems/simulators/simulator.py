@@ -34,7 +34,7 @@ class Simulator:
 
 
 # Representation of a case in progress
-class CaseState:
+class _CaseState:
 
     def __init__(self,
                  case,
@@ -185,15 +185,15 @@ class EventDispatcherSimulator(Simulator):
                                  start_time=current_time,
                                  event_history=[case_next_event])
 
-        return CaseState(case=case,
-                         assigned_ambulance=selected_ambulance,
-                         event_iterator=case_event_iterator,
-                         next_event=case_next_event,
-                         next_event_time=case_event_finish_datetime,
-                         case_record=case_record)
+        return _CaseState(case=case,
+                          assigned_ambulance=selected_ambulance,
+                          event_iterator=case_event_iterator,
+                          next_event=case_next_event,
+                          next_event_time=case_event_finish_datetime,
+                          case_record=case_record)
 
     # Processes the event in the case state and generates a new case state if there is another event after to process
-    def process_ongoing_case(self, case_state: CaseState, current_time: datetime):
+    def process_ongoing_case(self, case_state: _CaseState, current_time: datetime):
 
         finished_event = case_state.next_event
         case_state.case_record.event_history.append(finished_event)
@@ -233,7 +233,7 @@ class EventDispatcherSimulator(Simulator):
     # Selects an ambulance for the given case
     def select_ambulance(self, ambulances, case: Case, time: datetime):
         available_ambulances = [amb for amb in ambulances if not amb.deployed]
-        selection = self.ambulance_selector.select_ambulance(available_ambulances, case, time)
+        selection = self.ambulance_selector.select(available_ambulances, case, time)
         return selection
 
     def get_metrics(self):

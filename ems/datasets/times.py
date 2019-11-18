@@ -7,6 +7,7 @@ from geopy import Point
 from ems.datasets.location import LocationSet
 
 
+# TODO -- Make more generalizable, or do so in the generators
 class TravelTimes:
     """
     Maintains a matrix of travel travel_times between one set of locations to another set of locations
