@@ -9,20 +9,41 @@ from ems.datasets.times import TravelTimes
 from ems.models.ambulance import Ambulance
 
 
-# Interface for generating event durations
 class DurationGenerator:
+    """
+    Generates a delta of time
+    """
 
     # TODO -- use kwargs to support generation of durations w/o ambulance and destination
     def generate(self,
                  ambulance: Ambulance = None,
                  destination: Point = None,
                  timestamp: datetime = None):
+        """
+        Generates a delta of time
+
+        :param ambulance:
+        :type ambulance: Ambulance
+        :param destination:
+        :type destination: Point
+        :param timestamp: Timestamp from which the duration begins
+        :type timestamp: datetime
+        :return: dict where 'duration' key is the computed timedelta
+        :rtype: dict
+        """
         raise NotImplementedError()
 
 
 class DistanceDurationGenerator(DurationGenerator):
+    """
+    Generates a delta of time based on an average assumed velocity (time = haversine distance / velocity)
+    """
 
     def __init__(self, velocity):
+        """
+        :param velocity: Average velocity
+        :type velocity: float
+        """
         self.velocity = velocity
 
     def generate(self,
@@ -33,9 +54,17 @@ class DistanceDurationGenerator(DurationGenerator):
         return {'duration': timedelta(seconds=int(distance_km / self.velocity))}
 
 
+# TODO -- abstract timedelta from init params
 class ConstantDurationGenerator(DurationGenerator):
+    """
+    Returns the same constant delta time
+    """
 
     def __init__(self, constant: timedelta):
+        """
+        :param constant: Constant to return
+        :type constant: timedelta
+        """
         self.constant = constant
 
     def generate(self,
@@ -50,9 +79,19 @@ class ConstantDurationGenerator(DurationGenerator):
 # lambda = (total # of cases) / (total # of time units in an interval)
 # e.g. For 1,000 cases in 40,000 minutes, lambda = 1/40
 class PoissonDurationGenerator(DurationGenerator):
+    """
+    Generates the time delta based on an exponential distribution with parameter lambda. Lambda = total number of cases
+    / total number of time units in an interval
+
+    e.g. For 1,000 cases in 40,000 minutes, lambda = 1/40
+    """
 
     def __init__(self,
                  lmda: float):
+        """
+        :param lmda: lambda
+        :type lmda: float
+        """
         self.lmda = lmda
 
     def generate(self,
@@ -64,12 +103,21 @@ class PoissonDurationGenerator(DurationGenerator):
         return {'duration': timedelta(minutes=minutes_until_next)}
 
 
-# Implementation of an event duration generator that uniformly selects a random duration between two bounds
+# TODO -- change name to bounded duration generator
 class RandomDurationGenerator(DurationGenerator):
+    """
+    Uniformly selects a random time delta between two bounds
+    """
 
     def __init__(self,
                  lower_bound: float = 5,
                  upper_bound: float = 20):
+        """
+        :param lower_bound: The lower time delta bound (in minutes)
+        :type lower_bound: float
+        :param upper_bound: The upper time delta bound (in minutes)
+        :type upper_bound: float
+        """
         self.lower_bound = timedelta(minutes=lower_bound)
         self.upper_bound = timedelta(minutes=upper_bound)
 
@@ -85,11 +133,23 @@ class RandomDurationGenerator(DurationGenerator):
         return {'duration': timedelta(seconds=duration_in_seconds)}
 
 
+# TODO -- think about using this generator to generate times for metrics and policies, to reduce reuse, abstract
+# out the travel times object from those classes, and promote cflexibility
 class TravelTimeDurationGenerator(DurationGenerator):
+    """
+    Uniformly selects a random time delta between two bounds
+    """
 
+    # TODO -- default value for epsilon
     def __init__(self,
                  travel_times: TravelTimes,
                  epsilon: float):
+        """
+        :param travel_times: Travel times between points
+        :type travel_times: TravelTimes
+        :param epsilon: Parameter used in the calculation of error
+        :type epsilon: float
+        """
         self.travel_times = travel_times
         self.epsilon = epsilon
 

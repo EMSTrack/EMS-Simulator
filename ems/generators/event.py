@@ -9,12 +9,25 @@ from ems.models.event import EventType, Event
 
 
 class EventGenerator:
+    """
+    Stochastically generates events for an emergency case
+    """
 
     def __init__(self,
                  travel_duration_generator: DurationGenerator,
                  incident_duration_generator: DurationGenerator,
                  hospital_duration_generator: DurationGenerator,
                  hospital_selector: HospitalSelector):
+        """
+        :param travel_duration_generator: Generates travel times between a base and an emergency
+        :type travel_duration_generator: DurationGenerator
+        :param incident_duration_generator: Generates the time spent attending to a patient
+        :type incident_duration_generator: DurationGenerator
+        :param hospital_duration_generator: Generates the travel times between an emergency location and hospital
+        :type hospital_duration_generator: DurationGenerator
+        :param hospital_selector: Selects a hospital for patient transport
+        :type hospital_selector: HospitalSelector
+        """
         self.hospital_selector = hospital_selector
         self.hospital_duration_generator = hospital_duration_generator
         self.incident_duration_generator = incident_duration_generator
@@ -25,8 +38,23 @@ class EventGenerator:
                  incident_location: Point,
                  timestamp: datetime,
                  event_type: EventType,
-                 hospital_location=None):
+                 hospital_location: Point=None):
+        """
+        Generates the next event for a given case based on the simulation parameters
 
+        :param ambulance: Ambulance that is attending to the case
+        :type ambulance: Ambulance
+        :param incident_location: Location of the case emergency
+        :type incident_location: Point
+        :param timestamp: Current timestamp
+        :type timestamp: datetime
+        :param event_type: Type of the event to generate
+        :type event_type: EventType
+        :param hospital_location: Location of the hospital (can be None)
+        :type hospital_location: Point
+        :return:
+        :rtype: Event
+        """
         destination = None
         duration = 0
 
