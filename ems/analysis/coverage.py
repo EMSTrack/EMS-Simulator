@@ -5,9 +5,10 @@ from ems.datasets.location import LocationSet
 from ems.datasets.times import TravelTimes
 
 
-# Computes a percent coverage given a radius
 class PercentDoubleCoverage(Metric):
-    """ """
+    """
+    Computes the double coverage for a given set of available ambulances, demand points, r1 interval, and r2 interval
+    """
 
     def __init__(self,
                  demands: LocationSet,
@@ -15,6 +16,18 @@ class PercentDoubleCoverage(Metric):
                  r1: int = 600,
                  r2: int = 840,
                  tag=['primary_coverage', 'secondary_coverage']):
+        """
+        :param demands: The demand points to cover
+        :type demands: LocationSet
+        :param travel_times: The travel times between locations
+        :type travel_times: TravelTimes
+        :param r1: r1 distance as defined in the double coverage model
+        :type r1: int
+        :param r2: r2 distance as defined in the double coverage model
+        :type r2: int
+        :param tag:
+        :type tag:
+        """
         super().__init__(tag=tag)
         self.demands = demands
         self.travel_times = travel_times
@@ -22,16 +35,15 @@ class PercentDoubleCoverage(Metric):
         self.r2 = timedelta(seconds=r2)
 
         # Caching for better performance
-        self.primary_coverage_state = PercentCoverageState(ambulances=set(),
-                                                           locations_coverage=[set() for _ in demands.locations])
+        self.primary_coverage_state = _PercentCoverageState(ambulances=set(),
+                                                            locations_coverage=[set() for _ in demands.locations])
 
-        self.secondary_coverage_state = PercentCoverageState(ambulances=set(),
-                                                             locations_coverage=[set() for _ in demands.locations])
+        self.secondary_coverage_state = _PercentCoverageState(ambulances=set(),
+                                                              locations_coverage=[set() for _ in demands.locations])
 
     def calculate(self,
                   timestamp: datetime,
                   **kwargs):
-        """ TODO """
         if "ambulances" not in kwargs:
             return None
 
@@ -43,10 +55,10 @@ class PercentDoubleCoverage(Metric):
         ambulances_to_remove = [a for a in self.primary_coverage_state.ambulances if a not in available_ambulances]
 
         for ambulance in ambulances_to_add:
-            self.add_ambulance_coverage(ambulance)
+            self._add_ambulance_coverage(ambulance)
 
         for ambulance in ambulances_to_remove:
-            self.remove_ambulance_coverage(ambulance)
+            self._remove_ambulance_coverage(ambulance)
 
         primary = 0
         for location_coverage in self.primary_coverage_state.locations_coverage:
@@ -72,7 +84,7 @@ class PercentDoubleCoverage(Metric):
         result = round(primary / len(self.demands) * 100, 4), round(secondary / len(self.demands) * 100, 4)
         return result
 
-    def add_ambulance_coverage(self, ambulance):
+    def _add_ambulance_coverage(self, ambulance):
 
         # Retrieve closest point from set 1 to the ambulance
         closest_to_amb, _, _ = self.travel_times.origins.closest(ambulance.location)
@@ -93,7 +105,7 @@ class PercentDoubleCoverage(Metric):
         self.primary_coverage_state.ambulances.add(ambulance)
         self.secondary_coverage_state.ambulances.add(ambulance)
 
-    def remove_ambulance_coverage(self, ambulance):
+    def _remove_ambulance_coverage(self, ambulance):
 
         for location_coverage in self.primary_coverage_state.locations_coverage:
 
@@ -114,7 +126,7 @@ class PercentDoubleCoverage(Metric):
         self.secondary_coverage_state.ambulances.remove(ambulance)
 
 
-class PercentCoverageState:
+class _PercentCoverageState:
 
     def __init__(self,
                  ambulances,
@@ -123,22 +135,35 @@ class PercentCoverageState:
         self.locations_coverage = locations_coverage
 
 
-# Computes a percent coverage given a radius
 class PercentCoverage(Metric):
+    """
+    Computes the percentage of coverage for a given set of ambulances, demand points, and r1 interval
+    """
 
     def __init__(self,
                  demands: LocationSet,
                  travel_times: TravelTimes,
                  r1: int = 600,
                  tag='percent_coverage'):
+        """
+        :param demands: The demand points to cover
+        :type demands: LocationSet
+        :param travel_times: The travel times between locations
+        :type travel_times: TravelTimes
+        :param r1: r1 distance as defined in the double coverage model
+        :type r1: int
+        :param r2: r2 distance as defined in the double coverage model
+        :param tag:
+        :type tag:
+        """
         super().__init__(tag=tag)
         self.demands = demands
         self.travel_times = travel_times
         self.r1 = timedelta(seconds=r1)
 
         # Caching for better performance
-        self.coverage_state = PercentCoverageState(ambulances=set(),
-                                                   locations_coverage=[set() for _ in demands.locations])
+        self.coverage_state = _PercentCoverageState(ambulances=set(),
+                                                    locations_coverage=[set() for _ in demands.locations])
 
     def calculate(self,
                   timestamp: datetime,
@@ -195,21 +220,30 @@ class PercentCoverage(Metric):
         self.coverage_state.ambulances.remove(ambulance)
 
 
-# Computes a radius coverage
 class RadiusCoverage(Metric):
+    """
+    Computes the minimum r1 radius required to cover a given percentage of demand points with the given ambulances
+    """
 
     def __init__(self,
                  demands: LocationSet,
                  travel_times: TravelTimes,
                  percent: float = 85,
                  tag="radius_coverage"):
+        """"
+        :param demands: The demand points to cover
+        :type demands: LocationSet
+        :param travel_times: The travel times between locations
+        :type travel_times: TravelTimes
+        :param percent: Percentage of demand points to cover
+        :type percent: float
+        :param tag:
+        :type tag:
+        """
         super().__init__(tag)
         self.demands = demands
         self.travel_times = travel_times
         self.percent = percent
-
-        # self.coverage_state = RadiusCoverageState(ambulances=[],
-        #                                           tt_to_ambulance=[None for _ in demands.locations])
 
     def calculate(self,
                   timestamp: datetime,

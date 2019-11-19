@@ -15,6 +15,7 @@ class AmbulanceBaseSelector:
         :param num_ambulances: The number of ambulances to map
         :type num_ambulances: int
         :return: The list of bases selected
+        :rtype: List<Base>
         """
         raise NotImplementedError()
 

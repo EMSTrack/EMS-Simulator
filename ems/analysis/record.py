@@ -11,12 +11,25 @@ from ems.models.event import Event, EventType
 
 
 class CaseRecord:
+    """
+    Representation of a finished case and all its details
+    """
 
     def __init__(self,
                  case: Case,
                  ambulance: Ambulance,
                  start_time: datetime,
                  event_history: List[Event]):
+        """
+        :param case: The case
+        :type case: Case
+        :param ambulance: The ambulance assigned to the case
+        :type ambulance: Ambulance
+        :param start_time: The time an ambulance was dispatched to the case
+        :type start_time: datetime
+        :param event_history: The events associated with the case
+        :type event_history: List<Event>
+        """
         self.case = case
         self.ambulance = ambulance
         self.event_history = event_history
@@ -27,10 +40,16 @@ class CaseRecord:
 
 
 class CaseRecordSet:
+    """
+    Represents a set of case records
+    """
 
     def __init__(self,
                  case_records: List[CaseRecord] = None):
-
+        """
+        :param case_records: List of case records
+        :type case_records: List<CaseRecord>
+        """
         if case_records is None:
             case_records = []
 
@@ -38,9 +57,32 @@ class CaseRecordSet:
         self.case_records.sort()
 
     def add_case_record(self, case_record: CaseRecord):
+        """
+        Adds a case record to the set
+
+        :param case_record: Case record to add
+        :type case_record: CaseRecord
+        """
         bisect.insort(self.case_records, case_record)
 
     def write_to_file(self, output_filename):
+        """
+        Writes the case records to a CSV file with the given params for each case:
+            - Case ID
+            - Date recorded
+            - Emergency latitude
+            - Emergency longitude
+            - Case priority
+            - Assigned ambulance ID
+            - Time the case was started
+            - For each event:
+                - Location latitude
+                - Location longitude
+                - Duration
+
+        :param output_filename: Output filename
+        :type output_filename: string
+        """
         a = []
         for case_record in self.case_records:
 

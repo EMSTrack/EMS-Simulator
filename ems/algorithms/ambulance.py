@@ -29,6 +29,7 @@ class AmbulanceSelector:
         :param time: The time at which to select an ambulance
         :type time: datetime
         :return: The selected ambulance
+        :rtype: Ambulance
         """
         raise NotImplementedError()
 
@@ -69,6 +70,7 @@ class BestTravelTime(AmbulanceSelector):
         :param ambulances:
         :param closest_loc_to_case:
         :return: The selected ambulance and the travel time to the case
+        :rtype: Ambulance, int
         """
 
         shortest_time = timedelta.max
@@ -140,6 +142,7 @@ class LeastDisruption(BestTravelTime):
         Finds the ambulance with the least disruption of coverage
         :param ambulances
         :return: The ambulance and the travel time
+        :rtype: Ambulance, int
         """
 
         # Calculate all combinations of ambulances's coverage and return the best one.

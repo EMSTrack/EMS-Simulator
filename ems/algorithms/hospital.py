@@ -23,6 +23,7 @@ class HospitalSelector:
         :param ambulance: The ambulance that will travel to the hospital
         :type ambulance: Ambulance
         :return: The selected hospital
+        :rtype: Hospital
         """
         raise NotImplementedError()
 
