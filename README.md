@@ -7,6 +7,9 @@ EMS Simulator is an open-source software for performing ambulance dispatch simul
 - __Source Code:__ https://github.com/EMSTrack/EMS-Simulator
 - __Bug Reporting:__ https://github.com/EMSTrack/EMS-Simulator/issues
 
+Install this package via the following command:
+
+`python3 -m pip install ems-simulator`
 
 EMS-Simulator depends on the following libraries:
 - __NumPy__, for mathmatical computation convenience
