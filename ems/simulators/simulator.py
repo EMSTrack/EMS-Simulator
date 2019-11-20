@@ -1,9 +1,6 @@
 import bisect
 from datetime import datetime
 
-# TODO -- remove dependency on colored library
-from termcolor import colored
-
 from ems.algorithms.ambulance import AmbulanceSelector
 from ems.analysis.metric import MetricAggregator
 from ems.analysis.record import CaseRecordSet, CaseRecord
@@ -92,8 +89,8 @@ class EventDispatcherSimulator(Simulator):
 
                 case = pending_cases.pop(0)
 
-                self.print(colored("Current Time: {}".format(current_time), "cyan", attrs=["bold"]))
-                self.print(colored("Processing pending case: {}".format(case.id), "green"))
+                self.print("Current Time: {}".format(current_time))
+                self.print("Processing pending case: {}".format(case.id))
 
                 case_state_to_add = self.process_new_case(ambulances, case, current_time)
                 bisect.insort_left(ongoing_case_states, case_state_to_add)
@@ -102,17 +99,17 @@ class EventDispatcherSimulator(Simulator):
             elif next_case and next_case.date_recorded <= next_ongoing_case_state_dt:
 
                 current_time = next_case.date_recorded
-                self.print(colored("Current Time: {}".format(current_time), "cyan", attrs=["bold"]))
+                self.print("Current Time: {}".format(current_time))
 
                 # Process a new case
                 if available_ambulances:
-                    self.print(colored("Processing new case: {}".format(next_case.id), "green", attrs=["bold"]))
+                    self.print("Processing new case: {}".format(next_case.id))
                     case_state_to_add = self.process_new_case(ambulances, next_case, current_time)
                     bisect.insort_left(ongoing_case_states, case_state_to_add)
 
                 # Delay a case
                 else:
-                    self.print(colored("New case arrived but no available ambulance; Case pending".format(), "red"))
+                    self.print("New case arrived but no available ambulance; Case pending")
                     pending_cases.append(next_case)
 
                 # Prepare the next case
@@ -124,9 +121,8 @@ class EventDispatcherSimulator(Simulator):
                 next_ongoing_case_state = ongoing_case_states.pop(0)
                 current_time = next_ongoing_case_state.next_event_time
 
-                self.print(colored("Current Time: {}".format(current_time), "cyan", attrs=["bold"]))
-                self.print(colored("Processing ongoing case: {}".format(next_ongoing_case_state.case.id),
-                                   "green"))
+                self.print("Current Time: {}".format(current_time))
+                self.print("Processing ongoing case: {}".format(next_ongoing_case_state.case.id))
 
                 # Process ongoing case
                 case_state_to_add, finished = self.process_ongoing_case(next_ongoing_case_state, current_time)
@@ -135,13 +131,11 @@ class EventDispatcherSimulator(Simulator):
                 else:
                     self.case_record_set.add_case_record(next_ongoing_case_state.case_record)
 
-            self.print(colored("Busy ambulances: {}".format(sorted([amb.id for amb in ambulances if amb.deployed])),
-                               "yellow"))
-            self.print(colored("Ongoing cases: {}".format([case_state.case.id for case_state in ongoing_case_states]),
-                               "yellow"))
-            self.print(colored("Pending cases: {}".format([case.id for case in pending_cases]), "red"))
+            self.print("Busy ambulances: {}".format(sorted([amb.id for amb in ambulances if amb.deployed])))
+            self.print("Ongoing cases: {}".format([case_state.case.id for case_state in ongoing_case_states]))
+            self.print("Pending cases: {}".format([case.id for case in pending_cases]))
             self.print("")
-            self.print(colored("Metrics", "magenta", attrs=["bold"]))
+            self.print("Metrics")
 
             metric_kwargs = {"ambulances": ambulances,
                              "ongoing_cases": [case_state.case for case_state in ongoing_case_states],
@@ -151,7 +145,7 @@ class EventDispatcherSimulator(Simulator):
                 # Compute metrics
                 metrics = self.metric_aggregator.calculate(current_time, **metric_kwargs)
                 for metric_tag, value in metrics.items():
-                    self.print(colored("{}: {}".format(metric_tag, value), "magenta"))
+                    self.print("{}: {}".format(metric_tag, value))
 
             self.print("=" * 80)
 
@@ -223,7 +217,7 @@ class EventDispatcherSimulator(Simulator):
 
         # No more events
         else:
-            self.print(colored("Case finished", "green", attrs=["bold"]))
+            self.print("Case finished")
 
             # Free ambulance
             case_state.assigned_ambulance.deployed = False
